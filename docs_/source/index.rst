@@ -10,14 +10,13 @@ Welcome to test_candle's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: mnist_mlp_candle
-   :members:
+   readme
+   installation
+   mnist_can
+   def_utils
 
-.. automodule:: default_utils
-   :members:
 
-_ this .. currentmodule:: mnist_mlp_candle
-_ this .. autofunction:: initialize_parameters
+
 
 Indices and tables
 ==================
