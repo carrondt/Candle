@@ -12,8 +12,7 @@ Welcome to test_candle's documentation!
 
    readme
    installation
-   mnist_can
-   def_utils
+
 
 
 
