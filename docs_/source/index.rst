@@ -11,7 +11,8 @@ Welcome to test_candle's documentation!
    :caption: Contents:
 
    readme
-   installation
+   user_guide
+   modules
 
 
 
