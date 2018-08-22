@@ -15,10 +15,11 @@ Minimum requirements
 --------------------
 
 CANDLE compliant code requires you to create a Python class and
-implement two methods. The base class already provides common parameters
-such as ``batch_size``, ``epoch``, etc. and enables you to register
-additional parameters as needed. In addition to that, you can require
-that some parameters exist and have values, if needed.
+implement two methods, ``run()`` and ``initialize_parameters()``. The
+base class already provides common parameters such as ``batch_size``,
+``epoch``, etc. and enables you to register additional parameters as
+needed. In addition to that, you can mandate that some parameters exist
+and have values, if needed.
 
 Base Class
 ~~~~~~~~~~
@@ -34,14 +35,14 @@ example <https://github.com/ECP-CANDLE/Candle/blob/library/examples/mnist/mnist.
     additional_definitions = None
     required = None
 
-    class MNIST(candle.Benchmark): 
+    class MNIST(candle.Benchmark):  # 1
         def set_locals(self):
             if required is not None:
                 self.required = set(required)
             if additional_definitions is not None:
                 self.additional_definitions = additional_definitions
 
--  Create a new class by extending ``candle.Benchmark``
+- # 1: Create a new class by extending ``candle.Benchmark``
 
 Additional Parameters
 ^^^^^^^^^^^^^^^^^^^^^
@@ -49,33 +50,32 @@ Additional Parameters
 You can add a parameter like `this
 example <https://github.com/ECP-CANDLE/Benchmarks/blob/release_01/Pilot1/TC1/tc1.py#L16-L58>`__.
 The example illustrates how to define an integer type parameter,
-``pool`` with minimum description.
+``pool`` with minimum description. This uses Python’s argparse library.
 
 ::
 
     additional_definitions = [{
-        'name':'pool', 
-        'nargs':'+', 
-        'type': int, 
-        'help':'network structure of shared layer' 
+        'name':'pool', # 1
+        'nargs':'+', # 2
+        'type': int, # 3
+        'help':'network structure of shared layer' # 4
     },
     ]
 
--  required. Name of parameter.
+- # 1: required. Name of parameter.
 
--  optional. The number of command-line arguments.
+- # 2: optional. The number of command-line arguments.
 
--  required. The type to which the command-line arguments should be
-   converted.
+- # 3: required. The type to which the command-line arguments should be converted.
 
--  optional. A brief description of what the argument does.
+- # 4: optional. A brief description of what the argument does.
 
 Mandatory parameters
 ^^^^^^^^^^^^^^^^^^^^
 
 If you would like to make some common parameters mandatory, you will
-need to define a ``required`` array and pass it to the definition of
-your class.
+need to define a ``required`` variable, a list of parameter names, and
+pass it to the definition of your class.
 
 ::
 
@@ -94,7 +94,8 @@ On some high-performance computing machines like ``Theta``, the
 performance will be greatly improved if we let CANDLE handle threads.
 So, it is generally recommended to have code like lines 14 to 21 in
 `this
-example <https://github.com/ECP-CANDLE/Candle/blob/library/examples/mnist/mnist.py#L9-L16>`__
+example <https://github.com/ECP-CANDLE/Candle/blob/library/examples/mnist/mnist.py#L9-L16>`__,
+which sets appropriate parameters in a tensorflow session.
 
 ::
 
@@ -110,7 +111,7 @@ example <https://github.com/ECP-CANDLE/Candle/blob/library/examples/mnist/mnist.
 initialize\_parameters Method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the ``initialize_parameters`` method, we will instantiate the base
+In the ``initialize_parameters()`` method, we will instantiate the base
 class, and finally build an argument parser to recognize your customized
 parameters in addition to the default parameters (
 ``default_utils.initialize_parameters()``). The
@@ -126,26 +127,25 @@ which will be passed to the ``run()`` method.
 
     def initialize_parameters():
         mnist_common = mnist.MNIST(mnist.file_path,
-            'mnist_params.txt', 
+            'mnist_params.txt',  # 4
             'keras',
             prog='mnist_mlp',
             desc='MNIST example'
-        )  
+        )  # 1
 
         # Initialize parameters
-        gParameters = default_utils.initialize_parameters(mnist_common) 
+        gParameters = default_utils.initialize_parameters(mnist_common)  # 2
         ..
 
-        return gParameters   
+        return gParameters  # 3
 
--  instantiate base class
+- # 1: instantiate base class
 
--  build argument parser
+- # 2: build argument parser
 
--  initialize\_parameters() should return a dictionary
+- # 3: initialize\_parameters() should return a dictionary
 
--  a file that contains default values for the given parameters. See
-   below for example.
+- # 4: a file that contains default values for the given parameters. See below for example.
 
 ::
 
@@ -162,15 +162,16 @@ Run Method
 ~~~~~~~~~~
 
 You can place your deep learning code in the ``run()`` method. Your
-parameters are accessible like ``gParameters['batch_size']``.
+parameters are accessible in the input dictionary like
+``gParameters['batch_size']``.
 
 We have an
-`example <https://github.com/ECP-CANDLE/Candle/blob/library/examples/mnist/mnist_mlp_candle.py>`__,
+`example <https://github.com/ECP-CANDLE/Candle/blob/library/examples/mnist/mnist_mlp_candle.py>`__
 that converted a simple MNIST neural net ``mnist_mlp.py`` provided by
 `Keras
 Team <https://github.com/keras-team/keras/blob/master/examples/mnist_mlp.py>`__
 into CANDLE compliant form. In this example, you will see how the actual
-neural network was implemented in the ``run()`` method.
+neural network was transplanted in the ``run()`` method.
 
 Finally, the ``run()`` method returns a keras history object. This can
 be omitted for upf workflow, but required for HPO workflow. (see upf and
@@ -180,7 +181,7 @@ mbo explanation below)
 
     # this is a part of mnist_mlp_candle.py
 
-    def run(gParameters): 
+    def run(gParameters): # 1
         ##########################################
         # Your DL start here. See mnist_mlp.py   #
         ##########################################
@@ -204,11 +205,11 @@ mbo explanation below)
         ##########################################
         # End of mnist_mlp.py ####################
         ##########################################
-      return history  
+      return history # 2
 
--  run method receives parameter dictionary
+- # 1: run method receives parameter dictionary
 
--  returns keras history object or None\*
+- # 2: returns keras history object or None.
 
    -  The mlrMBO workflow requires returning a keras history object so
       that the workflow can evaluate the model. The upf workflow does
@@ -228,7 +229,7 @@ Running UPF on Theta
 
 In this tutorial, we will execute an mnist example rewritten for CANDLE.
 The source code is available on `CANDLE github
-repo <https://github.com/ECP-CANDLE/Candle/tree/library/examples/mnist>`__.
+repo <https://github.com/ECP-CANDLE/Candle/tree/library/examples/mnist>`__. This example assumes that you have access to the Candle_ECP project on theta.
 
 Step 1. Create directory and checkout Supervisor & Candle repos
 
@@ -243,7 +244,7 @@ Step 2. Move to upf workflow directory
 
 ::
 
-    $ cd Supervisor/workflow/upf
+    $ cd Supervisor/workflows/upf
 
 Step 3. Set Env variables. In ``test/cfg-sys-1.sh``, you will need to
 set ``BENCHMARK_DIR`` to point the directory that holds the example, and
@@ -251,8 +252,8 @@ set ``BENCHMARK_DIR`` to point the directory that holds the example, and
 
 ::
 
-    BENCHMARK_DIR=/home/hsyoo/candle_tutorial/Candle/examples/mnist 
-    MODEL_PYTHON_SCRIPT=mnist_mlp_candle 
+    BENCHMARK_DIR=/home/hsyoo/candle_tutorial/Candle/examples/mnist
+    MODEL_PYTHON_SCRIPT=mnist_mlp_candle
 
 -  This location should reflect your environment
 
@@ -316,29 +317,29 @@ Step 7. Review output files. After the job is completed, the result
 files are available in the experiments directory.
 (Supervisor/workflow/upf/experiments). For example,
 ``/home/hsyoo/candle_tutorial/Supervisor/workflows/upf/experiments/X000``
-will contains files like below,
+will contain files like below,
 
 ::
 
     -rw-r--r-- 1 hsyoo cobalt  2411 Aug 17 19:13 262775.cobaltlog
-    -rw-r--r-- 1 hsyoo users   1179 Aug 17 18:55 cfg-sys-1.sh 
+    -rw-r--r-- 1 hsyoo users   1179 Aug 17 18:55 cfg-sys-1.sh
     -rw-r--r-- 1 hsyoo users      7 Aug 17 18:55 jobid.txt
-    -rw-r--r-- 1 hsyoo users   3310 Aug 17 19:13 output.txt 
-    drwxr-xr-x 4 hsyoo users    512 Aug 17 19:07 run 
+    -rw-r--r-- 1 hsyoo users   3310 Aug 17 19:13 output.txt
+    drwxr-xr-x 4 hsyoo users    512 Aug 17 19:07 run
     -rw------- 1 hsyoo users  10863 Aug 17 18:55 swift-t-workflow.8X4.tic
     -rw-r--r-- 1 hsyoo users    677 Aug 17 18:55 turbine.log
     -rwxr--r-- 1 hsyoo users   5103 Aug 17 18:55 turbine-theta.sh
-    -rw-r--r-- 1 hsyoo users     60 Aug 17 18:55 upf-1.txt 
+    -rw-r--r-- 1 hsyoo users     60 Aug 17 18:55 upf-1.txt
     -rw-r--r-- 1 hsyoo users   4559 Aug 17 18:55 workflow.sh.log
 
-    hsyoo@thetalogin4:~/candle_tutorial/Supervisor/workflows/upf/experiments/X000> ls -al run/ 
+    hsyoo@thetalogin4:~/candle_tutorial/Supervisor/workflows/upf/experiments/X000> ls -al run/
     total 2
     drwxr-xr-x 4 hsyoo users  512 Aug 17 19:07 .
     drwxr-xr-x 3 hsyoo users 1024 Aug 17 20:33 ..
     drwxr-xr-x 3 hsyoo users  512 Aug 17 20:34 test0
     drwxr-xr-x 3 hsyoo users  512 Aug 17 19:13 test1
 
-    hsyoo@thetalogin4:~/candle_tutorial/Supervisor/workflows/upf/experiments/X000> cat run/test0/model.log 
+    hsyoo@thetalogin4:~/candle_tutorial/Supervisor/workflows/upf/experiments/X000> cat run/test0/model.log
     ... many lines omitted ...
     Epoch 10/10
     60000/60000 [==============================] - 12s - loss: 4.3824 - acc: 0.7253 - val_loss: 2.1082 - val_acc: 0.8671
@@ -374,7 +375,7 @@ Step 2. Move to mlrMBO workflow directory
 
 ::
 
-    $ cd Supervisor/workflow/mlrMBO
+    $ cd Supervisor/workflows/mlrMBO
 
 Step 3. Set Env variables. In ``test/cfg-sys-1.sh``, you will need to
 set ``BENCHMARK_DIR`` to point the directory that your script locates,
@@ -382,8 +383,8 @@ and ``MODEL_PYTHON_SCRIPT`` to name the script you want to run
 
 ::
 
-    BENCHMARK_DIR=/home/hsyoo/candle_tutorial/Candle/examples/mnist 
-    MODEL_PYTHON_SCRIPT=mnist_mlp_candle 
+    BENCHMARK_DIR=/home/hsyoo/candle_tutorial/Candle/examples/mnist
+    MODEL_PYTHON_SCRIPT=mnist_mlp_candle
 
 -  This location should reflect your environment
 
