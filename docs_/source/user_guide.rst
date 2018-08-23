@@ -115,7 +115,7 @@ In the ``initialize_parameters()`` method, we will instantiate the base
 class, and finally build an argument parser to recognize your customized
 parameters in addition to the default parameters (
 ``default_utils.initialize_parameters()``). The
-``initialize_parameters`` method should return a python dictionary,
+``initialize_parameters()`` method should return a python dictionary,
 which will be passed to the ``run()`` method.
 
 .. code:: python
@@ -252,12 +252,12 @@ set ``BENCHMARK_DIR`` to point the directory that holds the example, and
 
 ::
 
-    BENCHMARK_DIR=/home/hsyoo/candle_tutorial/Candle/examples/mnist
-    MODEL_PYTHON_SCRIPT=mnist_mlp_candle
+    BENCHMARK_DIR=/home/hsyoo/candle_tutorial/Candle/examples/mnist # 1
+    MODEL_PYTHON_SCRIPT=mnist_mlp_candle # 2
 
--  This location should reflect your environment
+- # 1: This location should reflect your environment
 
--  Note this requires filename without extension (such as .py)
+- # 2: Note this requires filename without extension (such as .py)
 
 Step 4. Set execution plan. Check ``test/upf-1.txt`` for parameter
 configuration and modify as needed. This file contains multiple JSON
@@ -383,12 +383,12 @@ and ``MODEL_PYTHON_SCRIPT`` to name the script you want to run
 
 ::
 
-    BENCHMARK_DIR=/home/hsyoo/candle_tutorial/Candle/examples/mnist
-    MODEL_PYTHON_SCRIPT=mnist_mlp_candle
+    BENCHMARK_DIR=/home/hsyoo/candle_tutorial/Candle/examples/mnist # 1
+    MODEL_PYTHON_SCRIPT=mnist_mlp_candle # 2
 
--  This location should reflect your environment
+- # 1: This location should reflect your environment
 
--  Note this requires filename without extension (such as .py)
+- # 2: Note this requires filename without extension (such as .py)
 
 Step 4. Config hyper parameters. In this step, we are configuring
 parameter sets, which we will iteratively evaluate. For example, you can
